@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/ThiyagoNearle/bookstore_users_api/controllers/ping"
-	"github.com/ThiyagoNearle/bookstore_users_api/controllers/users"
+	"github.com/ThiyagoNearle/bookstore_users-api/controllers/ping"
+	"github.com/ThiyagoNearle/bookstore_users-api/controllers/users"
 )
 
 func mapUrls() {
@@ -12,3 +12,6 @@ func mapUrls() {
 	router.POST("/user", users.CreateUser)
 
 }
+
+// 	_ "github.com/ThiyagoNearle/bookstore_users_api/controllers/ping"
+//	_ "github.com/ThiyagoNearle/bookstore_users_api/controllers/users"
