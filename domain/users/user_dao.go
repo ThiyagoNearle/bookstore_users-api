@@ -41,3 +41,5 @@ func (user *User) Save() *errors.RestErr {
 	usersDB[user.Id] = user // current = user
 	return nil
 }
+
+//ery4y4y4y
