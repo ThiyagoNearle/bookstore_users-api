@@ -44,7 +44,7 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	result, saveErr := services.CreateUser(user) // attempt to create this user in the database
+	result, saveErr := services.UserService.CreateUser(user) // attempt to create this user in the database
 	// if we are getting 404 error from the services then this controller is just returning that error
 	// if we have any error on the services, we can just return that error as json
 
@@ -52,7 +52,7 @@ func Create(c *gin.Context) {
 		c.JSON(saveErr.Status, saveErr) // though saveErr hold address of error value, if we send that to json, it takes only value out of that
 		return
 	}
-	c.JSON(http.StatusCreated, result)
+	c.JSON(http.StatusCreated, result.Marshall(c.GetHeader("X-Public") == "true"))
 }
 
 func Get(c *gin.Context) { // Here no return type
@@ -62,12 +62,12 @@ func Get(c *gin.Context) { // Here no return type
 		c.JSON(idErr.Status, idErr)
 		return
 	}
-	user, getErr := services.GetUser(userId)
+	user, getErr := services.UserService.GetUser(userId)
 	if getErr != nil {
 		c.JSON(getErr.Status, getErr) // though saveErr hold address of error value, if we send that to json, it takes only value out of that
 		return
 	}
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusOK, user.Marshall(c.GetHeader("X-Public") == "true"))
 }
 
 func Update(c *gin.Context) {
@@ -92,12 +92,12 @@ func Update(c *gin.Context) {
 
 	isPartial := (c.Request.Method == http.MethodPatch)
 
-	result, err := services.UpdateUser(isPartial, user)
+	result, err := services.UserService.UpdateUser(isPartial, user)
 	if err != nil {
 		c.JSON(err.Status, err)
 		return
 	}
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, result.Marshall(c.GetHeader("X-Public") == "true"))
 
 }
 
@@ -108,7 +108,7 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	if err := services.DeleteUser(userId); err != nil {
+	if err := services.UserService.DeleteUser(userId); err != nil {
 		c.JSON(err.Status, err)
 		return
 	}
@@ -119,11 +119,14 @@ func Delete(c *gin.Context) {
 func Search(c *gin.Context) {
 	status := c.Query("status")
 
-	users, err := services.SearchUser(status)
+	users, err := services.UserService.SearchUser(status)
 	if err != nil {
 		c.JSON(err.Status, err)
 		return
 	}
-	c.JSON(http.StatusOK, users)
+
+	c.JSON(http.StatusOK, users.Marshall(c.GetHeader("X-Public") == "true"))
+
+	// while rendering as we display json if we want to call some "METHOD" in some other package, we dont need to call that package name instead we can directly call the method with our variable.
 
 }

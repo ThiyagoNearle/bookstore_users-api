@@ -2,12 +2,27 @@ package services
 
 import (
 	"github.com/ThiyagoNearle/bookstore_users-api/domain/users"
+	"github.com/ThiyagoNearle/bookstore_users-api/utils/crypto_utils"
 	"github.com/ThiyagoNearle/bookstore_users-api/utils/date_utils"
 	"github.com/ThiyagoNearle/bookstore_users-api/utils/errors"
 )
 
+var (
+	UserService userServiceInterface = &userService{} // holding struct value
+)
+
+type userService struct{}
+
+type userServiceInterface interface {
+	GetUser(int64) (*users.User, *errors.RestErr)
+	CreateUser(user users.User) (*users.User, *errors.RestErr)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	SearchUser(string) (users.Users, *errors.RestErr)
+}
+
 // assume that we get a valid id
-func GetUser(userId int64) (*users.User, *errors.RestErr) {
+func (s *userService) GetUser(userId int64) (*users.User, *errors.RestErr) {
 	result := &users.User{Id: userId}
 	if err := result.Get(); err != nil {
 		return nil, err
@@ -16,7 +31,7 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 
 }
 
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (s *userService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	err := user.Validate()
 
 	if err != nil {
@@ -25,15 +40,18 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	user.Status = users.StatusActive
 	user.DateCreated = date_utils.GetNowDBFormat()
 
-	if err := user.Save(); err != nil { // err := &RestErr{values}
+	user.Password = crypto_utils.GetMd5(user.Password)
+
+	if err := user.Save(); err != nil { // err := &RestErr{values}          /// here we passing values to methods ( so the methods in doamin that design as receiver as pointer in domain.)
+		/// so if we pass values , then the domain function will take the address
 		return nil, err
 	}
 	return &user, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.Id) //current, err:= users.User{Id: user.Id}
-	if err != nil {
+func (s *userService) UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+	current := &users.User{Id: user.Id} //current, err:= users.User{Id: user.Id}
+	if err := current.Get(); err != nil {
 		return nil, err
 	}
 
@@ -42,8 +60,8 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	//}
 
 	if isPartial { // isPartial means isPartial == True go to this loop
-		if user.FirstNanme != "" { // if we didn'y give any value that consider as empty string
-			current.FirstNanme = user.FirstNanme
+		if user.FirstName != "" { // if we didn'y give any value that consider as empty string
+			current.FirstName = user.FirstName
 		}
 
 		if user.LastName != "" {
@@ -56,7 +74,7 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 
 	} else {
 
-		current.FirstNanme = user.FirstNanme
+		current.FirstName = user.FirstName
 		current.LastName = user.LastName
 		current.Email = user.Email
 	}
@@ -67,13 +85,13 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	return current, nil
 }
 
-func DeleteUser(userId int64) *errors.RestErr {
+func (s *userService) DeleteUser(userId int64) *errors.RestErr {
 	user := &users.User{Id: userId}
 	return user.Delete()
 
 }
 
-func SearchUser(status string) ([]users.User, *errors.RestErr) {
+func (s *userService) SearchUser(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindByStatus(status)
 

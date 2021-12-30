@@ -12,16 +12,18 @@ const (
 
 type User struct { // call always users.User
 	Id          int64  `json:"id"`
-	FirstNanme  string `json:"first_name"`
+	FirstName  string `json:"first_name"`
 	LastName    string `json:"last_name"`
 	Email       string `json:"email"`
 	DateCreated string `json:"date_created"`
 	Status      string `json:"status"`
-	Password    string `json:"-"` // this field, internally we working with password & dont want this as a JSON
+	Password    string `json:"password"` // this field, internally we working with password & dont want this as a JSON
 }
 
+type Users []User
+
 func (user *User) Validate() *errors.RestErr {
-	user.FirstNanme = strings.TrimSpace(user.FirstNanme) // in json body if we give value like empty "   ", (there is no value) & trimspace will give "" because there is no character.
+	user.FirstName = strings.TrimSpace(user.FirstName) // in json body if we give value like empty "   ", (there is no value) & trimspace will give "" because there is no character.
 	user.LastName = strings.TrimSpace(user.LastName)
 
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
