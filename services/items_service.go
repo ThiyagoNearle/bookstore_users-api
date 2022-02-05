@@ -1,20 +1,23 @@
 package services
 
-var (
-	ItemsService ItemsServiceInterface = &itemsService{}
+import (
+	"errors"
+
+	"context"
+
+	"github.com/ThiyagoNearle/bookstore_users-api/domain/users"
+	"github.com/ThiyagoNearle/bookstore_users-api/middleware"
 )
 
-type itemsService struct{}
+func Getuser(ctx context.Context) (*users.User, error) { // it is function not method
 
-type ItemsServiceInterface interface {
-	GetItem()
-	SaveItem()
-}
+	user, _ := middleware.GetCustomContext(ctx)
 
-func (s *itemsService) GetItem() {
+	print("usid==", user.Id)
 
-}
-
-func (s *itemsService) SaveItem() {
-
+	if user.Id == 0 {
+		return nil, errors.New("cant able to id information")
+	} else {
+		return user, nil
+	}
 }

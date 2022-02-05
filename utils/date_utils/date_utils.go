@@ -17,5 +17,5 @@ func GetNowString() string {
 }
 
 func GetNowDBFormat() string {
-	return GetNow().Format(apiDbLayout)
+	return GetNow().Format(apiDbLayout)   // calling GetNow function afetr calling the function use format
 }
